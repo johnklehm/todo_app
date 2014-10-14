@@ -1,0 +1,10 @@
+---
+:orm: sequel
+:test: shoulda
+:mock: mocha
+:script: jquery
+:renderer: slim
+:stylesheet: compass
+:namespace: TodoApp
+:migration_format: number
+:admin_renderer: slim

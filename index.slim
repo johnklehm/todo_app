@@ -1,0 +1,36 @@
+button id="addItem" class="btn btn-primary" Add ToDo
+button id="listItems" class="btn btn-info" data-toggle="modal" data-target="#myModal" Recent ToDos
+
+
+/ Modal
+div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"
+  div class="modal-dialog modal-lg"
+    div class="modal-content"
+      div class="modal-header"
+        button type="button" class="close" data-dismiss="modal"
+        	span aria-hidden="true"
+        		| &times;
+        		span class="sr-only"
+        			| Close
+        h4 class="modal-title" id="myModalLabel"
+        	| Recent ToDos
+      div class="modal-body"
+      	table id="todoTable"
+      		thead
+      			tr
+      				th id
+      				th account_id
+      				th content
+      				th data_row
+      				th data_col
+      				th data_sizex
+      				th data_sizey
+      				th created_at
+      				th updated_at
+      		tbody
+      div class="modal-footer"
+        button type="button" class="btn btn-default" data-dismiss="modal" Close
+
+div class="demo"
+	div class="gridster"
+		ul

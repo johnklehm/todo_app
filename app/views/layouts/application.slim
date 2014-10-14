@@ -1,0 +1,207 @@
+doctype 5
+html lang='en'
+  head
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    meta content='text/html; charset=utf-8' http-equiv='Content-Type'
+    = csrf_meta_tags
+    meta name='viewport' content='width=device-width,initial-scale=1'
+    title = @title.present? ? "#{@title} | OhhTooDo" : "OhhTooDo"
+    = favicon_tag 'favicon.ico'
+    link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.3/css/jquery.dataTables.css"
+    link href='http://fonts.googleapis.com/css?family=Varela' rel='stylesheet'
+    = stylesheet_link_tag 'bootstrap', 'jquery.gridster.min', 'application'
+
+  body
+    div class='navbar navbar-fixed-top'
+      div class='navbar-inner'
+        div class='container'
+          = link_to 'OhhTooDo', url(:base, :index), :class => 'navbar-brand', :title => 'Main'
+
+          ul class='nav navbar-nav pull-right'
+            li class='navbar-edit-account' = link_to tag_icon(:user), url(:accounts, :edit, :id => current_account.id), :title => pat(:profile), :class => 'navbar-nav-link'
+            li class='navbar-logout' = button_to(pat(:logout), url(:sessions, :destroy), :method => :delete, :class => 'navbar-nav-form') do
+              = content_tag :button, tag_icon(:'power-off'), :type => :submit, :title => pat(:logout), :class => 'navbar-nav-form-link'
+
+          ul class='nav navbar-nav pull-left'
+            - project_modules.each do |project_module|
+              li class=("navbar-module #{'active' if request.path_info =~ /^#{project_module.path}/}")
+                = link_to project_module.human_name, url(project_module.path)
+
+    div class='container main'
+      div class='main-wrapper'
+        =  {:error => 'danger', :warning => 'warning', :success => 'success', :notice => 'info'}.map { |type, class_name| flash_tag(type, :class => "alert alert-#{class_name} fade in", :bootstrap => true) }.join.html_safe
+        div class='row' = yield
+        div class='main-wrapper-push'
+
+    footer
+      div class='footer-wrapper container'
+        p class='pull-left'
+          ' Copyright &copy; #{Time.now.year} OhhTooDo -
+          b Powered by Padrino v.#{Padrino.version}
+        ul class='pull-right footer-links'
+          li = link_to tag_icon(:home, 'web'), 'http://www.padrinorb.com', :target => :_blank, :class => 'footer-links-link'
+          li = link_to tag_icon(:heart, 'blog'), 'http://www.padrinorb.com/blog', :target => :_blank, :class => 'footer-links-link'
+          li = link_to tag_icon(:github, 'code'), 'https://github.com/padrino/padrino-framework', :target => :_blank, :class => 'footer-links-link'
+          li = link_to tag_icon(:twitter, 'twitter'), 'http://twitter.com/padrinorb', :target => :_blank, :class => 'footer-links-link'
+
+
+    =javascript_include_tag 'jquery-1.11.0.min', (Padrino.env == :production ? 'bootstrap/bootstrap.min' : %w[bootstrap/affix bootstrap/alert bootstrap/button bootstrap/carousel bootstrap/collapse bootstrap/dropdown  bootstrap/tooltip bootstrap/transition  bootstrap/modal bootstrap/popover bootstrap/scrollspy bootstrap/tab]), 'gridster/jquery.gridster.min', 'jinplace/jinplace-1.0.1.min', :application
+    script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.3/js/jquery.dataTables.js"
+
+    javascript:
+
+      var todoItemURL =     '/api/v1/todo_item';
+      var todoItemManyURL = '/api/v1/todo_items';
+      var gridster;
+      var dataTable;
+
+      // Pile of hacks from here on in...sorrynotsorry/hotmess
+      $(function() {
+
+        var withCSRFToken = function withCSRFTokenImpl(obj) {
+          var tokenEl = $('meta[name=csrf-token]');
+          if (!tokenEl) throw "No CSRF tag on page e.g. meta name='csrf-token'";
+
+          obj['authenticity_token'] = tokenEl.attr('content');
+
+          return obj;
+        };
+
+        var putGridWidget = function putGridWidgetmpl(ui, $widget) {
+          $.ajax(todoItemManyURL, {
+            type: 'put',
+            data: withCSRFToken({ attributes: gridster.serialize()})
+          });
+        };
+
+        var putTodoContent = function putTodoContentImpl(opts, value) {
+          var dataObj = {
+            attributes: {}
+          };
+          dataObj['attributes']['content'] = value;
+          return $.ajax(opts.url, {
+              type: 'put',
+              data: withCSRFToken(dataObj),
+              dataFilter: function(data, type) {
+                console.log(data);
+                return data['content'];
+              }
+            });
+        };
+
+        var getTodoContent = function getTodoContentImpl(opts) {
+          return $.ajax(opts.url, {
+              data: withCSRFToken({}),
+              dataFilter: function(data, type) {
+                console.log(data);
+                return data['content'];
+              }
+            });
+        };
+
+        gridster = $('.gridster > ul').gridster({
+          widget_margins: [10, 10],
+          widget_base_dimensions: [160, 160],
+          min_cols: 4,
+          min_rows: 4,
+          autogrow_cols: true,
+          autogrow_rows: true,
+          autogenerate_stylesheet: true,
+          serialize_params: function($w, wgd) {
+            return { 
+              id: $w.attr('data-id'),
+              data_col: wgd.col, 
+              data_row: wgd.row, 
+              data_sizex: wgd.size_x,
+              data_sizey: wgd.size_y
+            };
+          },
+          resize: {
+            enabled: true,
+            stop: putGridWidget
+          },
+          draggable: {
+            stop: putGridWidget
+          }
+        }).data('gridster');
+
+
+        var widgetDefaultText = 'Write something';
+        var widget = '<li><span class="editable">' + widgetDefaultText + '</span></li>';
+        // load grid
+        $.ajax(todoItemURL).done(function(data) {
+          $.each(data, function(index, item) {
+            console.log("load grid index: " + JSON.stringify(index));
+            console.log("load grid item: " + JSON.stringify(item));
+            var instanceURL = todoItemURL + '/' + item.id;
+            var contentId = 'content' + item.id;
+            gridster.add_widget(
+              '<li data-id="' + item.id +'">' + 
+              '<span id="' + contentId + '" class="editable">' + item.content + '</span></li>',
+              item.data_sizex,
+              item.data_sizey,
+              item.data_col,
+              item.data_row
+            );
+            var contentEl = $(contentId);
+            contentEl.attr('data-url', instanceURL);
+            contentEl.attr('data-type', 'textarea');
+            contentEl.jinplace({
+              submitFunction: putTodoContent,
+              loadFunction: getTodoContent
+            });
+          });
+        });
+        $('#addItem').click(function() {
+          var added = gridster.add_widget(widget);
+          $.post(todoItemURL, 
+              withCSRFToken({
+                attributes: {
+                  content: widgetDefaultText,
+                  data_row: added.attr('data-row'),
+                  data_col: added.attr('data-col'),
+                  data_sizex: added.attr('data-sizex'),
+                  data_sizey: added.attr('data-sizey')
+                }
+              })
+            ).done(function(data) {
+              added.attr('data-id', data.id);
+
+              var instanceURL = todoItemURL + '/' + data.id;
+              var contents = added.children('span.editable');
+              contents.attr('id', 'content' + data.id);
+              contents.attr('data-data', widgetDefaultText);
+              contents.attr('data-url', instanceURL);
+              contents.attr('data-loadurl', instanceURL);
+              contents.attr('data-type', 'textarea');
+              contents.jinplace({
+                submitFunction: putTodoContent,
+                loadFunction: getTodoContent
+              });
+            });
+        });
+
+        dataTable = $('#todoTable').DataTable({
+          "ajax": {
+            "url": todoItemURL,
+            "dataSrc": ""
+          },
+          "columns": [
+            { "data": "id" },
+            { "data": "account_id" },
+            { "data": "content" },
+            { "data": "data_row" },
+            { "data": "data_col" },
+            { "data": "data_sizex" },
+            { "data": "data_sizey" },
+            { "data": "created_at" },
+            { "data": "updated_at" }
+          ]
+        });
+        $('#listItems').click(function() {
+          dataTable.ajax.reload();
+        });
+      });
