@@ -1,4 +1,4 @@
-/*! gridster.js - v0.5.6-dev-b6d5f98 - 2014-10-15
+/*! gridster.js - v0.5.6-5ba2f2d - 2014-10-16
 * http://gridster.net/
 * Copyright (c) 2014 ducksboard; Licensed MIT */
 
@@ -3809,7 +3809,7 @@
     */
     fn.add_faux_rows = function(rows) {
         var actual_rows = this.rows;
-        var max_rows = actual_rows + (rows || 1);
+        var max_rows = actual_rows + parseInt(rows || 1);
 
         for (var r = max_rows; r > actual_rows; r--) {
             for (var c = this.cols; c >= 1; c--) {
@@ -3835,7 +3835,7 @@
     */
     fn.add_faux_cols = function(cols) {
         var actual_cols = this.cols;
-        var max_cols = actual_cols + (cols || 1);
+        var max_cols = actual_cols + parseInt(cols || 1);
         max_cols = Math.min(max_cols, this.options.max_cols);
 
         for (var c = actual_cols + 1; c <= max_cols; c++) {
