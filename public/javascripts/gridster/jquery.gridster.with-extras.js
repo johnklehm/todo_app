@@ -1,4 +1,4 @@
-/*! gridster.js - v0.5.6 - 2014-09-25
+/*! gridster.js - v0.5.6-dev-b6d5f98 - 2014-10-15
 * http://gridster.net/
 * Copyright (c) 2014 ducksboard; Licensed MIT */
 
@@ -3791,8 +3791,10 @@
             this.gridmap[col] = [];
         }
 
-        this.gridmap[col][row] = false;
-        this.faux_grid.push(coords);
+        if (this.gridmap[col].length <= row) {
+            this.gridmap[col][row] = false;
+            this.faux_grid.push(coords);
+        }
 
         return this;
     };
