@@ -86,7 +86,6 @@ html lang='en'
               type: 'put',
               data: withCSRFToken(dataObj),
               dataFilter: function(data, type) {
-                console.log(data);
                 return data['content'];
               }
             });
@@ -96,7 +95,6 @@ html lang='en'
           return $.ajax(opts.url, {
               data: withCSRFToken({}),
               dataFilter: function(data, type) {
-                console.log(data);
                 return data['content'];
               }
             });
@@ -139,7 +137,6 @@ html lang='en'
           var instanceURL = todoItemURL + '/' + data.id;
           var contents = el.children('span.editable');
           contents.attr('id', 'content' + data.id);
-          contents.attr('data-data', widgetDefaultText);
           contents.attr('data-url', instanceURL);
           contents.attr('data-loadurl', instanceURL);
           contents.attr('data-type', 'textarea');
@@ -153,7 +150,7 @@ html lang='en'
 
           var added;
           if (item) {
-            added = gridster.add_widget(widgetOpen + content + widgetClose,
+            added = gridster.add_widget(widgetOpen + item.content + widgetClose,
               item.data_sizex,
               item.data_sizey,
               item.data_col,
