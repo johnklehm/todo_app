@@ -130,29 +130,43 @@ html lang='en'
 
 
         var widgetDefaultText = 'Write something';
-        var widget = '<li><span class="editable">' + widgetDefaultText + '</span><button class="close gs-resize-handle-y">x</button></li>';
+        var widgetOpen = '<li><span class="editable">';
+        var widgetClose = '</span><button class="close gs-resize-handle-y">x</button></li>';
+        var makeTodoWidget = function makeTodoWidgetImpl(data) {
+
+            var added;
+            if (data.data_sizex) {
+              added = gridster.add_widget(widgetOpen + data.content + widgetClose,
+                data.data_sizex,
+                data.data_sizey,
+                data.data_col,
+                data.data_row
+              );
+            } else {
+              added = added = gridster.add_widget(widgetOpen + data.content + widgetClose);
+            }
+
+            added.attr('data-id', data.id);
+
+            var instanceURL = todoItemURL + '/' + data.id;
+            var contents = added.children('span.editable');
+            contents.attr('id', 'content' + data.id);
+            contents.attr('data-data', widgetDefaultText);
+            contents.attr('data-url', instanceURL);
+            contents.attr('data-loadurl', instanceURL);
+            contents.attr('data-type', 'textarea');
+            contents.jinplace({
+              submitFunction: putTodoContent,
+              loadFunction: getTodoContent
+            });
+        };
+
         // load grid
         $.ajax(todoItemURL).done(function(data) {
           $.each(data, function(index, item) {
             console.log("load grid index: " + JSON.stringify(index));
             console.log("load grid item: " + JSON.stringify(item));
-            var instanceURL = todoItemURL + '/' + item.id;
-            var contentId = 'content' + item.id;
-            gridster.add_widget(
-              '<li data-id="' + item.id +'">' + 
-              '<span id="' + contentId + '" class="editable">' + item.content + '</span></li>',
-              item.data_sizex,
-              item.data_sizey,
-              item.data_col,
-              item.data_row
-            );
-            var contentEl = $(contentId);
-            contentEl.attr('data-url', instanceURL);
-            contentEl.attr('data-type', 'textarea');
-            contentEl.jinplace({
-              submitFunction: putTodoContent,
-              loadFunction: getTodoContent
-            });
+            makeTodoWidget(item);
           });
         });
         $('#addItem').click(function() {
@@ -167,21 +181,7 @@ html lang='en'
                   data_sizey: added.attr('data-sizey')
                 }
               })
-            ).done(function(data) {
-              added.attr('data-id', data.id);
-
-              var instanceURL = todoItemURL + '/' + data.id;
-              var contents = added.children('span.editable');
-              contents.attr('id', 'content' + data.id);
-              contents.attr('data-data', widgetDefaultText);
-              contents.attr('data-url', instanceURL);
-              contents.attr('data-loadurl', instanceURL);
-              contents.attr('data-type', 'textarea');
-              contents.jinplace({
-                submitFunction: putTodoContent,
-                loadFunction: getTodoContent
-              });
-            });
+            ).done(makeTodoWidget);
         });
 
         dataTable = $('#todoTable').DataTable({
