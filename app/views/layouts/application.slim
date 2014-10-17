@@ -130,7 +130,7 @@ html lang='en'
 
 
         var widgetDefaultText = 'Write something';
-        var widget = '<li><span class="editable">' + widgetDefaultText + '</span><button class="close">x</button></li>';
+        var widget = '<li><span class="editable">' + widgetDefaultText + '</span><button class="close gs-resize-handle-y">x</button></li>';
         // load grid
         $.ajax(todoItemURL).done(function(data) {
           $.each(data, function(index, item) {
