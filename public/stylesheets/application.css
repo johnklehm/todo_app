@@ -399,3 +399,7 @@ footer p {
 .gridster ul li {
   padding: 5px;
 }
+
+.gs-resize-handle-y {
+    z-index: 20;
+}
